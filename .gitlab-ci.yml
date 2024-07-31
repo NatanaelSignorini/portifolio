@@ -1,0 +1,83 @@
+stages:
+  - install
+  - lint
+  - build
+  # - test
+  # - deploy
+
+cache:
+  paths:
+    - node_modules/
+
+install:
+  stage: install
+  image: node:20.15.1
+  tags:
+    - gitlab-org
+  script:
+    - yarn
+  artifacts:
+    name: '${CI_BUILD_REF}'
+    expire_in: 20 mins
+    paths:
+      - node_modules
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"
+
+lint:
+  stage: build
+  image: node:20.15.1
+  tags:
+    - gitlab-org
+  script:
+    - yarn lint
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "dev"
+
+build:
+  stage: build
+  image: node:20.15.1
+  artifacts:
+    name: '${CI_BUILD_REF}'
+    expire_in: 20 mins
+    paths:
+      - .next
+  tags:
+    - gitlab-org
+  script:
+    - yarn
+    - yarn run build
+  only:
+    refs:
+      - merge_requests
+  variables:
+    CI_MERGE_REQUEST_TARGET_BRANCH_NAME: 'dev'
+    NEXT_PORT: '3000'
+
+# test:
+#   image: cypress/browsers:node-20.15.1-chrome-127.0.6533.72-1-ff-128.0-edge-126.0.2592.102-1
+#   tags:
+#     - gitlab-org
+#   stage: test
+#   script:
+#     - yarn start &
+#     - yarn cypress install
+#     - yarn cypress run --browser chrome
+#   artifacts:
+#     when: always
+#     paths:
+#       - cypress/videos/**/*.mp4
+#       - cypress/screenshots/**/*.png
+#     expire_in: 1 day
+#   only:
+#     refs:
+#       - merge_requests
+#   variables:
+#     CI_MERGE_REQUEST_TARGET_BRANCH_NAME: 'dev'
+#     NEXT_PORT: '3000'
