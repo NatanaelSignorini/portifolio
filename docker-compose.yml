@@ -1,0 +1,13 @@
+version: "3.7"
+
+services:
+  web:
+    restart: always
+    container_name: ${NAME_DOCKER_CONTAINER}
+    ports:
+      - 127.0.0.1:${NEXT_PORT}:3000
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
